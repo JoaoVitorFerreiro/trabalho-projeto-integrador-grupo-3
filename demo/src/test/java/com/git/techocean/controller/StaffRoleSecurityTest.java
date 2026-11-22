@@ -47,13 +47,13 @@ class StaffRoleSecurityTest {
     @MockitoBean ServicoService servicos;
 
     @Test void supervisorCannotReadAdminAudit() throws Exception {
-        mvc.perform(get("/admin/auditoria").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_SUPERVISOR"))))
+        mvc.perform(get("/api/admin/auditoria").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_SUPERVISOR"))))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(sessions);
     }
 
     @Test void funcionarioCannotDeleteOperationalResources() throws Exception {
-        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/cargas/1")
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/cargas/1")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
                 .andExpect(status().isForbidden());
     }
@@ -61,13 +61,13 @@ class StaffRoleSecurityTest {
     @Test void funcionarioCanReadClientOperationalData() throws Exception {
         org.mockito.Mockito.when(clientes.listar()).thenReturn(List.of());
         org.mockito.Mockito.when(sessions.touch("test-session", 7L, "FUNCIONARIO")).thenReturn(true);
-        mvc.perform(get("/clientes").with(jwt().jwt(token -> token.subject("7").claim("jti", "test-session").claim("role", "FUNCIONARIO"))
+        mvc.perform(get("/api/clientes").with(jwt().jwt(token -> token.subject("7").claim("jti", "test-session").claim("role", "FUNCIONARIO"))
                         .authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
                 .andExpect(status().isOk());
     }
 
     @Test void anonymousCannotReadClientData() throws Exception {
-        mvc.perform(get("/clientes")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/clientes")).andExpect(status().isUnauthorized());
     }
 
     @Test void funcionarioCanReadOwnProfileButNotStaffList() throws Exception {
@@ -78,16 +78,16 @@ class StaffRoleSecurityTest {
         var employeeJwt = jwt().jwt(token -> token.subject("7").claim("jti", "test-session").claim("role", "FUNCIONARIO"))
                 .authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"));
 
-        mvc.perform(get("/admin/me").with(employeeJwt))
+        mvc.perform(get("/api/admin/me").with(employeeJwt))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.cargo").value("FUNCIONARIO"));
-        mvc.perform(get("/admin/usuarios").with(employeeJwt))
+        mvc.perform(get("/api/admin/usuarios").with(employeeJwt))
                 .andExpect(status().isForbidden());
     }
 
     @Test void funcionarioCanLogoutTheirOwnSession() throws Exception {
         org.mockito.Mockito.when(sessions.touch("test-session", 7L, "FUNCIONARIO")).thenReturn(true);
-        mvc.perform(post("/admin/logout").with(jwt().jwt(token -> token.subject("7").claim("jti", "test-session").claim("role", "FUNCIONARIO"))
+        mvc.perform(post("/api/admin/logout").with(jwt().jwt(token -> token.subject("7").claim("jti", "test-session").claim("role", "FUNCIONARIO"))
                         .authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
                 .andExpect(status().isNoContent());
         org.mockito.Mockito.verify(sessions).logout("test-session");
@@ -95,6 +95,6 @@ class StaffRoleSecurityTest {
 
     @Test void publicServiceCatalogRemainsAvailableWithoutLogin() throws Exception {
         org.mockito.Mockito.when(servicos.listarDisponiveis()).thenReturn(List.of());
-        mvc.perform(get("/servicos")).andExpect(status().isOk());
+        mvc.perform(get("/api/servicos")).andExpect(status().isOk());
     }
 }

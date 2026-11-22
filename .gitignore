@@ -34,3 +34,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Config e dados exclusivos do servidor (nao versionar) ###
+/config/
+/data/

@@ -63,7 +63,7 @@ class CargaControllerTest {
                 .thenReturn(carga);
         when(sessions.touch("test-session", 1L, "ADMIN")).thenReturn(true);
 
-        mockMvc.perform(post("/cargas")
+        mockMvc.perform(post("/api/cargas")
                         .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(token -> token.subject("1").claim("jti", "test-session").claim("role", "ADMIN"))
@@ -83,7 +83,7 @@ class CargaControllerTest {
     void allowsConfiguredSiteOriginEvenWhenAnExtraCorsOriginIsConfigured() throws Exception {
         String siteOrigin = "https://techocean-web.pages.dev";
 
-        mockMvc.perform(options("/cargas")
+        mockMvc.perform(options("/api/cargas")
                         .header(HttpHeaders.ORIGIN, siteOrigin)
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "content-type"))
@@ -96,7 +96,7 @@ class CargaControllerTest {
         Carga carga = new Carga("Carga", 10.0, 5.0, "Geral", "Santos", "Recife");
         when(cargaService.listar()).thenReturn(List.of(carga));
 
-        mockMvc.perform(get("/cargas")
+        mockMvc.perform(get("/api/cargas")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(token -> token.subject("1").claim("jti", "test-session").claim("role", "ADMIN"))
                                 .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
@@ -109,7 +109,7 @@ class CargaControllerTest {
         Carga carga = new Carga("Carga", 10.0, 5.0, "Geral", "Santos", "Recife");
         when(cargaService.buscarPorId(3L)).thenReturn(carga);
 
-        mockMvc.perform(get("/cargas/3")
+        mockMvc.perform(get("/api/cargas/3")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(token -> token.subject("1").claim("jti", "test-session").claim("role", "ADMIN"))
                                 .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
@@ -123,7 +123,7 @@ class CargaControllerTest {
         when(cargaService.atualizar(3L, "Carga atualizada", 20.0, 8.0, "Geral", "Santos", "Rio"))
                 .thenReturn(carga);
 
-        mockMvc.perform(put("/cargas/3")
+        mockMvc.perform(put("/api/cargas/3")
                         .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(token -> token.subject("1").claim("jti", "test-session").claim("role", "ADMIN"))
@@ -138,7 +138,7 @@ class CargaControllerTest {
 
     @Test
     void deletesLoad() throws Exception {
-        mockMvc.perform(delete("/cargas/3")
+        mockMvc.perform(delete("/api/cargas/3")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(token -> token.subject("1").claim("jti", "test-session").claim("role", "ADMIN"))
                                 .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))

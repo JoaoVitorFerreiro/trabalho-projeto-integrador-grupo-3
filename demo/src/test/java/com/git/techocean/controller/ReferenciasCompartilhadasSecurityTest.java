@@ -41,24 +41,24 @@ class ReferenciasCompartilhadasSecurityTest {
 
     @Test void escritaDoCatalogoExigeAdministrador() throws Exception {
         String body = "{\"tipo\":\"SRV\",\"nome\":\"Teste\"}";
-        mvc.perform(post("/referencias-compartilhadas").contentType(MediaType.APPLICATION_JSON).content(body)
+        mvc.perform(post("/api/referencias-compartilhadas").contentType(MediaType.APPLICATION_JSON).content(body)
                 .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
                 .andExpect(status().isForbidden());
-        mvc.perform(put("/referencias-compartilhadas/1").contentType(MediaType.APPLICATION_JSON).content(body)
+        mvc.perform(put("/api/referencias-compartilhadas/1").contentType(MediaType.APPLICATION_JSON).content(body)
                 .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_SUPERVISOR"))))
                 .andExpect(status().isForbidden());
-        mvc.perform(get("/referencias-compartilhadas")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/referencias-compartilhadas").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
+        mvc.perform(get("/api/referencias-compartilhadas")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/referencias-compartilhadas").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"))))
                 .andExpect(status().isOk());
         org.mockito.Mockito.when(referencias.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        mvc.perform(post("/referencias-compartilhadas").contentType(MediaType.APPLICATION_JSON).content(body)
+        mvc.perform(post("/api/referencias-compartilhadas").contentType(MediaType.APPLICATION_JSON).content(body)
                 .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isCreated());
     }
 
     @Test void aceitaSolicitacaoJsonCompartilhadaSemAlterarRotaAntiga() throws Exception {
         var funcionario = jwt().authorities(new SimpleGrantedAuthority("ROLE_FUNCIONARIO"));
-        mvc.perform(post("/solicitacoes/compartilhadas").contentType(MediaType.APPLICATION_JSON).with(funcionario)
+        mvc.perform(post("/api/solicitacoes/compartilhadas").contentType(MediaType.APPLICATION_JSON).with(funcionario)
                 .content("""
                     {"clienteId":1,"cargaOperacionalId":2,"servicoOperacionalId":3,
                      "nomeServico":"Pedido","categoria":"Operações e Navios","descricao":"Resumo",
@@ -68,8 +68,8 @@ class ReferenciasCompartilhadasSecurityTest {
         org.mockito.Mockito.verify(solicitacoesCompartilhadas).criar(captor.capture());
         org.junit.jupiter.api.Assertions.assertEquals(4L, captor.getValue().servicoReferenciaId());
         org.junit.jupiter.api.Assertions.assertEquals("EM_ANALISE", captor.getValue().statusSolicitacao());
-        mvc.perform(get("/solicitacoes").with(funcionario)).andExpect(status().isOk());
+        mvc.perform(get("/api/solicitacoes").with(funcionario)).andExpect(status().isOk());
         org.mockito.Mockito.verify(solicitacoes).listar();
-        mvc.perform(get("/solicitacoes/compartilhadas")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/solicitacoes/compartilhadas")).andExpect(status().isUnauthorized());
     }
 }
